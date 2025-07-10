@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wheel of Fortune (Black & White)</title>
+  <style>
+    body {
+      background: #fff;
+      color: #000;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      border: 10px solid #000;
+      border-radius: 50%;
+      margin-top: 20px;
+    }
+    #spinBtn {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #fff;
+      background-color: #000;
+      border: none;
+      cursor: pointer;
+    }
+    #pointer {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 80px;
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 30px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <div id="pointer"></div>
+  <canvas id="wheel" width="500" height="500"></canvas>
+  <br>
+  <button id="spinBtn">SPIN</button>
+
+  <script>
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const spinBtn = document.getElementById("spinBtn");
+
+    // === Editable Options ===
+    const options = [
+      "15% Off",
+      "Free 1 Session",
+      "10% Off",
+      "5% Off",
+      "Free Nail Care Pack",
+      "$5 Off",
+      "20% Off",
+      "Free Classic Gel"
+    ];
+    const numOptions = options.length;
+    const arcSize = (2 * Math.PI) / numOptions;
+    const radius = canvas.width / 2;
+    let angle = 0;
+    let spinning = false;
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < numOptions; i++) {
+        const start = i * arcSize;
+        ctx.beginPath();
+        ctx.fillStyle = i % 2 === 0 ? "#ddd" : "#888"; // grayscale colors
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, start, start + arcSize);
+        ctx.lineTo(radius, radius);
+        ctx.fill();
+
+        // Add text
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(start + arcSize / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#000";
+        ctx.font = "16px Arial";
+        ctx.fillText(options[i], radius - 10, 10);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+
+      let spinAngle = Math.random() * 2000 + 2000;
+      let duration = 5000;
+      let start = null;
+
+      function animateSpin(timestamp) {
+        if (!start) start = timestamp;
+        const elapsed = timestamp - start;
+        const easeOut = 1 - Math.pow(1 - elapsed / duration, 3);
+        angle = (spinAngle * easeOut) % 360;
+        canvas.style.transform = `rotate(${angle}deg)`;
+
+        if (elapsed < duration) {
+          requestAnimationFrame(animateSpin);
+        } else {
+          spinning = false;
+          const selectedIndex = numOptions - Math.floor((angle % 360) / (360 / numOptions)) - 1;
+          alert("Result: " + options[selectedIndex]);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    drawWheel();
+    spinBtn.addEventListener("click", spinWheel);
+  </script>
+</body>
+</html>
